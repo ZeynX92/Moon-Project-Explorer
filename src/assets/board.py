@@ -1,10 +1,11 @@
 import os
+import time
 import pygame
 from src.tools.load_image import load_image
 
 
 def tile_image_setup(file, tile_size):
-    image = load_image(f"src/assets/data/{file}.png")
+    image = load_image(f"assets/data/{file}.png")
     image = pygame.transform.scale(image, (tile_size, tile_size))
     pygame.draw.rect(image, (175, 238, 238), (0, 0, tile_size, tile_size), 1)
     pygame.draw.line(image, (175, 238, 238), (0, 0), (tile_size, tile_size))
@@ -56,17 +57,17 @@ class Tile(pygame.sprite.Sprite):
     def update(self, player_group, player):
         if self.bonus:
             if self.tile_type == "R":
-                rocket_image = load_image("src/assets/data/rocket.png")
+                rocket_image = load_image("assets/data/rocket.png")
                 rocket_image = pygame.transform.scale(rocket_image, (self.tile_size, self.tile_size))
                 self.image.blit(rocket_image, (0, 0))
 
             if self.tile_type == "E":
-                battery_image = load_image("src/assets/data/battery.png")
+                battery_image = load_image("assets/data/battery.png")
                 battery_image = pygame.transform.scale(battery_image, (self.tile_size, self.tile_size))
                 self.image.blit(battery_image, (0, 0))
 
         elif self.box_in_tile:
-            box_image = load_image("src/assets/data/box.png")
+            box_image = load_image("assets/data/box.png")
             box_image = pygame.transform.scale(box_image, (self.tile_size, self.tile_size))
             self.image.blit(box_image, (0, 0))
         else:
@@ -84,9 +85,14 @@ class Tile(pygame.sprite.Sprite):
                 player.box_on_board = False
                 self.box_in_tile = True
 
-            if self.tile_type == "L" and not player.box_on_board:
+            if self.tile_type == "L" and not player.box_on_board:   # анимация при наезде на кнопку
+                # TODO: АНИМАЦИЯ ПРИ НАЕЗДЕ НА КНОПКУ
+                for j in range(30):
+                    for i in range(1, 6):
+                        im = load_image(f"assets/data/sprites/drop/{i}.png")
+                        im = pygame.transform.scale(im, (self.tile_size, self.tile_size))
+                        player.image.blit(im, (0, 0))
                 player.box_on_board = True
-                player.update()
 
             if self.tile_type == "R" and self.bonus:
                 player.rockets += 1

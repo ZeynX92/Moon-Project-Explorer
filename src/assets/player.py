@@ -1,9 +1,13 @@
 import pygame
+import time
 from src.tools.load_image import load_image
 
 
-def player_setup_image(tile_size):
-    image = load_image("src/assets/data/lunar.png")
+def player_setup_image(tile_size, img="lunar.png"):
+    if img == "lunar.png":
+        image = load_image(f"assets/data/{img}")
+    else:
+        image = load_image(f"{img}")
     image = pygame.transform.scale(image, (tile_size, tile_size))
     image = pygame.transform.rotate(image, 270)
 
@@ -77,7 +81,7 @@ class Player(pygame.sprite.Sprite):
                 self.pr_velocity = velocity
 
         if self.box_on_board:
-            box_image = load_image("src/assets/data/box.png")
+            box_image = load_image("assets/data/box.png")
             box_image = pygame.transform.scale(box_image, (self.tile_size, self.tile_size))
             self.image.blit(box_image, (0, 0))
         else:

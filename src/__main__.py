@@ -15,9 +15,9 @@ clock = pygame.time.Clock()
 
 
 def start_screen():
-    main_screen_image = pygame.transform.scale(load_image("src/assets/data/main_screen.png"), (WIDTH, HEIGHT))
-    start_button_image = pygame.transform.scale(load_image("src/assets/data/start.png"), (151, 151))
-    help_button_image = pygame.transform.scale(load_image("src/assets/data/help.png"), (151, 151))
+    main_screen_image = pygame.transform.scale(load_image("assets/data/main_screen.png"), (WIDTH, HEIGHT))
+    start_button_image = pygame.transform.scale(load_image("assets/data/start.png"), (151, 151))
+    help_button_image = pygame.transform.scale(load_image("assets/data/help.png"), (151, 151))
 
     screen.blit(main_screen_image, (0, 0))
     screen.blit(start_button_image, (180, 385))
@@ -112,7 +112,7 @@ def fin_screen(level_data, player, win: bool):
 
 
 def load_level(level: int):
-    with open(f'src/assets/data/levels.csv', encoding="utf8") as csv_file:
+    with open(f'assets/data/levels.csv', encoding="utf8") as csv_file:
         reader = csv.reader(csv_file, delimiter=';', quotechar='"')
         for index, row in enumerate(reader):
             if index == level:
@@ -123,7 +123,7 @@ def load_level(level: int):
     tiles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
 
-    board = Board(f"src/assets/levels/{level_data[3]}", tiles_group, all_sprites)
+    board = Board(f"assets/levels/{level_data[3]}", tiles_group, all_sprites)
     player = Player(board.player_start_x, board.player_start_y, False, int(level_data[1]),
                     int(level_data[2]), board.tile_size,
                     player_group,
