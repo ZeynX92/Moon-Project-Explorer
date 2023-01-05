@@ -87,12 +87,8 @@ class Tile(pygame.sprite.Sprite):
 
             if self.tile_type == "L" and not player.box_on_board:   # анимация при наезде на кнопку
                 # TODO: АНИМАЦИЯ ПРИ НАЕЗДЕ НА КНОПКУ
-                for j in range(30):
-                    for i in range(1, 6):
-                        im = load_image(f"assets/data/sprites/drop/{i}.png")
-                        im = pygame.transform.scale(im, (self.tile_size, self.tile_size))
-                        player.image.blit(im, (0, 0))
-                player.box_on_board = True
+                player.drop = True
+                # player.box_on_board = True
 
             if self.tile_type == "R" and self.bonus:
                 player.rockets += 1

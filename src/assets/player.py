@@ -24,10 +24,14 @@ class Player(pygame.sprite.Sprite):
         self.tile_size = tile_size
         self.pr_x, self.pr_y = x - 1, y
         self.pr_velocity = None
-
         self.box_on_board = box_on_board
         self.energy = energy
         self.rockets = rockets
+
+        # для анимации падания
+        self.drop = False   # проигрывается ли
+        self.numdrop = 1    # номер спрайта
+        self.kolvo_vospr = False
 
         # self.image = player_zaglushka((255, 0, 0), tile_size).copy()
         self.image = player_setup_image(tile_size).copy()
@@ -81,17 +85,29 @@ class Player(pygame.sprite.Sprite):
                 self.pr_velocity = velocity
 
         if self.box_on_board:
-            box_image = load_image("assets/data/box.png")
-            box_image = pygame.transform.scale(box_image, (self.tile_size, self.tile_size))
-            self.image.blit(box_image, (0, 0))
+            self.image = player_setup_image(self.tile_size, img=f"assets\data\sprites\drop\\5.png")
+            self.image = pygame.transform.rotate(self.image,
+                                                 self.current_angle)
         else:
             self.image = pygame.transform.rotate(player_setup_image(self.tile_size), self.current_angle)
+
+    def animationdrop(self):
+        if self.drop and self.numdrop < 6:
+            self.image = player_setup_image(self.tile_size,
+                                            img=f"assets\data\sprites\drop\\{self.numdrop}.png")
+            self.numdrop += 1
+        else:
+            self.drop = False
+            self.numdrop = 1
+        if self.numdrop == 6:
+            self.image = player_setup_image(self.tile_size,
+                                            img=f"assets\data\sprites\drop\\{5}.png")
+            self.box_on_board = True
 
     def rocket_launch(self):
         global direction
         if self.rockets:
             self.rockets -= 1
-
             if self.pr_x - self.x != 0:
                 direction = ["x", 0]
             if self.pr_y - self.y != 0:

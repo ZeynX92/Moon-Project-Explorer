@@ -166,12 +166,16 @@ def load_level(level: int):
                     load_level(level)
                 if event.key == pygame.K_ESCAPE:
                     start_screen()
+        if player.kolvo_vospr is True:
+            # проигрывание анимаций покадрово
+            player.animationdrop()
+            player.kolvo_vospr = False
+        else:
+            player.kolvo_vospr = True
 
         tiles_group.update(player_group, player)
-
         clock.tick(FPS)
         pygame.display.flip()
-
         if board.check_win():
             tiles_group.draw(screen)
             player_group.draw(screen)
