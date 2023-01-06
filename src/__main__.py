@@ -9,6 +9,7 @@ from assets.player import Player
 WIDTH, HEIGHT = 1280, 720
 
 pygame.init()
+pygame.display.set_caption("Moon Project: Explorer")
 size = width, height = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()

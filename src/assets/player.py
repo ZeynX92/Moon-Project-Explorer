@@ -1,9 +1,8 @@
 import pygame
-import time
 from src.tools.load_image import load_image
 
 
-def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None, box=False):
+def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None):
     if img == "lunar.png":
         image = load_image(f"assets/data/{img}")
     else:
@@ -49,6 +48,8 @@ class Player(pygame.sprite.Sprite):
         self.numdrive = 1
         self.steps = 3
         self.vel = None
+        self.prpr1 = None
+        self.prpr2 = None
 
         # self.image = player_zaglushka((255, 0, 0), tile_size).copy()
         self.image = player_setup_image(tile_size).copy()
@@ -79,7 +80,6 @@ class Player(pygame.sprite.Sprite):
                 self.x, self.y = self.pr_x, self.pr_y
             else:
                 self.energy -= 1
-                # TODO: СЮДА АНИМАЦИЮ
                 self.rect.x = self.tile_size * self.x + self.board[0][0].offset_x
                 self.rect.y = self.tile_size * self.y + self.board[0][0].offset_y
 
@@ -127,7 +127,28 @@ class Player(pygame.sprite.Sprite):
         if self.is_drive is False:
             return
         self.vel = vel
-        if self.steps == 10:
+        if vel:
+            try:
+                if vel == 1:
+                    if self.board[self.y][self.x - 1].tile_type in ["W", "S", "I"]:
+                        self.is_drive = False
+                        return
+                if vel == 2:
+                    if self.board[self.y][self.x + 1].tile_type in ["W", "S", "I"]:
+                        self.is_drive = False
+                        return
+                if vel == 3:
+                    if self.board[self.y - 1][self.x].tile_type in ["W", "S", "I"]:
+                        self.is_drive = False
+                        return
+                if vel == 4:
+                    if self.board[self.y + 1][self.x].tile_type in ["W", "S", "I"]:
+                        self.is_drive = False
+                        return
+            except Exception:
+                self.is_drive = False
+                return
+        if self.steps == 9:
             self.is_drive = False
             self.steps = 1
             self.update(self.vel)
@@ -138,7 +159,6 @@ class Player(pygame.sprite.Sprite):
             self.image = player_setup_image(self.tile_size,
                                             img=f"assets\data\sprites\{path}\\{self.steps}.png",
                                             kuda_rotate=self.kuda_rotate)
-
             if self.kuda_rotate == "вверх":
                 self.rect.y -= 12
             elif self.kuda_rotate == "вправо":
