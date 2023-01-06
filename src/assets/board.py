@@ -86,7 +86,6 @@ class Tile(pygame.sprite.Sprite):
                 self.box_in_tile = True
 
             if self.tile_type == "L" and not player.box_on_board:   # анимация при наезде на кнопку
-                # TODO: АНИМАЦИЯ ПРИ НАЕЗДЕ НА КНОПКУ
                 player.drop = True
                 # player.box_on_board = True
 

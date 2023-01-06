@@ -3,20 +3,30 @@ import time
 from src.tools.load_image import load_image
 
 
-def player_setup_image(tile_size, img="lunar.png"):
+def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None, box=False):
     if img == "lunar.png":
         image = load_image(f"assets/data/{img}")
     else:
         image = load_image(f"{img}")
     image = pygame.transform.scale(image, (tile_size, tile_size))
-    image = pygame.transform.rotate(image, 270)
+    if kuda_rotate == "вверх":
+        image = pygame.transform.rotate(image, 0)
+    elif kuda_rotate == "вправо":
+        image = pygame.transform.rotate(image, -90)
+    elif kuda_rotate == "влево":
+        image = pygame.transform.rotate(image, -270)
+    elif kuda_rotate == "вниз":
+        image = pygame.transform.rotate(image, -180)
+    else:
+        image = pygame.transform.rotate(image, 270)
 
     return image
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x: int, y: int, box_on_board: bool, energy: int, rockets: int,
-                 tile_size: int, player_group: pygame.sprite.Group, all_sprites: pygame.sprite.Group, board):
+                 tile_size: int, player_group: pygame.sprite.Group, all_sprites: pygame.sprite.Group,
+                 board):
         super().__init__(player_group, all_sprites)
         self.current_angle = 0
         self.x, self.y = x, y
@@ -29,9 +39,16 @@ class Player(pygame.sprite.Sprite):
         self.rockets = rockets
 
         # для анимации падания
-        self.drop = False   # проигрывается ли
-        self.numdrop = 1    # номер спрайта
+        self.drop = False  # проигрывается ли
+        self.numdrop = 1  # номер спрайта
         self.kolvo_vospr = False
+
+        # для анимации езды
+        self.kuda_rotate = None
+        self.is_drive = False
+        self.numdrive = 1
+        self.steps = 3
+        self.vel = None
 
         # self.image = player_zaglushka((255, 0, 0), tile_size).copy()
         self.image = player_setup_image(tile_size).copy()
@@ -45,8 +62,7 @@ class Player(pygame.sprite.Sprite):
     def update(self, velocity=None):
         if velocity:
             self.pr_x, self.pr_y = self.x, self.y
-
-            if self.energy > 0:
+            if not self.is_drive and self.energy > 0:
                 if velocity == 1:
                     self.x -= 1
                 if velocity == 2:
@@ -57,7 +73,9 @@ class Player(pygame.sprite.Sprite):
                     self.y += 1
 
             if not (0 <= self.x < len(self.board[0])) or not (
-                    0 <= self.y < len(self.board)) or self.board[self.y][self.x].tile_type in ["W", "S", "I"]:
+                    0 <= self.y < len(self.board)) or self.board[self.y][self.x].tile_type in ["W",
+                                                                                               "S",
+                                                                                               "I"]:
                 self.x, self.y = self.pr_x, self.pr_y
             else:
                 self.energy -= 1
@@ -89,9 +107,10 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image,
                                                  self.current_angle)
         else:
-            self.image = pygame.transform.rotate(player_setup_image(self.tile_size), self.current_angle)
+            self.image = pygame.transform.rotate(player_setup_image(self.tile_size),
+                                                 self.current_angle)
 
-    def animationdrop(self):
+    def animationdrop(self):  # анимация падения
         if self.drop and self.numdrop < 6:
             self.image = player_setup_image(self.tile_size,
                                             img=f"assets\data\sprites\drop\\{self.numdrop}.png")
@@ -103,6 +122,32 @@ class Player(pygame.sprite.Sprite):
             self.image = player_setup_image(self.tile_size,
                                             img=f"assets\data\sprites\drop\\{5}.png")
             self.box_on_board = True
+
+    def drive(self, vel=None):  # анимация езды
+        if self.is_drive is False:
+            return
+        self.vel = vel
+        if self.steps == 10:
+            self.is_drive = False
+            self.steps = 1
+            self.update(self.vel)
+        else:
+            path = "drive"
+            if self.box_on_board:
+                path = "drivebox"
+            self.image = player_setup_image(self.tile_size,
+                                            img=f"assets\data\sprites\{path}\\{self.steps}.png",
+                                            kuda_rotate=self.kuda_rotate)
+
+            if self.kuda_rotate == "вверх":
+                self.rect.y -= 12
+            elif self.kuda_rotate == "вправо":
+                self.rect.x += 12
+            elif self.kuda_rotate == "вниз":
+                self.rect.y += 12
+            elif self.kuda_rotate == "влево":
+                self.rect.x -= 12
+            self.steps += 1
 
     def rocket_launch(self):
         global direction
@@ -131,14 +176,16 @@ class Player(pygame.sprite.Sprite):
                 if direction[1] == +1:
                     for x in range(self.x + 1, len(self.board[0])):
                         # TODO: И СЮДА АНИМАЦИЮ НАДО
-                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][x].tile_type == "S":
+                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][
+                            x].tile_type == "S":
                             print("BOOM")
                             self.board[self.y][x].tile_type = "."
                             break
                 else:
                     for x in range(self.x - 1, 0 - 1, -1):
                         # TODO: И СЮДА АНИМАЦИЮ НАДО ТОЖЕ
-                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][x].tile_type == "S":
+                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][
+                            x].tile_type == "S":
                             print("BOOM")
                             self.board[self.y][x].tile_type = "."
                             break
@@ -147,14 +194,16 @@ class Player(pygame.sprite.Sprite):
                 if direction[1] == +1:
                     for y in range(self.y + 1, len(self.board)):
                         # TODO: ДА И СЮДА ТОЖЕ
-                        if self.board[y][self.x].tile_type == "I" or self.board[y][self.x].tile_type == "S":
+                        if self.board[y][self.x].tile_type == "I" or self.board[y][
+                            self.x].tile_type == "S":
                             print("BOOM")
                             self.board[y][self.x].tile_type = "."
                             break
                 else:
                     for y in range(self.y - 1, 0 - 1, -1):
                         # TODO: УГАДАЙ, ЧТО
-                        if self.board[y][self.x].tile_type == "I" or self.board[y][self.x].tile_type == "S":
+                        if self.board[y][self.x].tile_type == "I" or self.board[y][
+                            self.x].tile_type == "S":
                             print("BOOM")
                             self.board[y][self.x].tile_type = "."
                             break

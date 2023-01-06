@@ -42,13 +42,13 @@ def start_screen():
 
 
 def fin_screen(level_data, player, win: bool):
-    with open(f'src/assets/data/levels.csv', "r", encoding="utf8") as csv_file:
+    with open(f'assets/data/levels.csv', "r", encoding="utf8") as csv_file:
         reader = csv.reader(csv_file, delimiter=';', quotechar='"')
         data = []
         for index, row in enumerate(reader):
             data.append(row)
 
-    with open(f'src/assets/data/levels.csv', "w", encoding="utf8", newline="") as csv_file:
+    with open(f'assets/data/levels.csv', "w", encoding="utf8", newline="") as csv_file:
         writer = csv.writer(
             csv_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for line in data:
@@ -151,13 +151,25 @@ def load_level(level: int):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    player.update(1)
+                    player.kuda_rotate = "влево"
+                    player.is_drive = True
+                    player.drive(vel=1)
+                    # player.update(1)
                 if event.key == pygame.K_RIGHT:
-                    player.update(2)
+                    player.kuda_rotate = "вправо"
+                    player.is_drive = True
+                    player.drive(vel=2)
+                    # player.update(2)
                 if event.key == pygame.K_UP:
-                    player.update(3)
+                    player.kuda_rotate = "вверх"
+                    player.is_drive = True
+                    player.drive(vel=3)
+                    # player.update(3)
                 if event.key == pygame.K_DOWN:
-                    player.update(4)
+                    player.kuda_rotate = "вниз"
+                    player.is_drive = True
+                    player.drive(vel=4)
+                    # player.update(4)
                 if event.key == pygame.K_LCTRL:
                     player.rocket_launch()
                 if event.key == pygame.K_SPACE:
@@ -166,12 +178,17 @@ def load_level(level: int):
                     load_level(level)
                 if event.key == pygame.K_ESCAPE:
                     start_screen()
-        if player.kolvo_vospr is True:
-            # проигрывание анимаций покадрово
-            player.animationdrop()
-            player.kolvo_vospr = False
-        else:
-            player.kolvo_vospr = True
+
+        if player.is_drive:
+            player.drive(vel=player.vel)
+
+        if player.is_drive is False:
+            if player.kolvo_vospr is False:
+                # проигрывание анимаций покадрово
+                player.animationdrop()
+                player.kolvo_vospr = True
+            else:
+                player.kolvo_vospr = False
 
         tiles_group.update(player_group, player)
         clock.tick(FPS)
