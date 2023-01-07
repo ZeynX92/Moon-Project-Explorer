@@ -1,20 +1,21 @@
 import pygame
-from src.tools.load_image import load_image
+from tools.load_image import load_image
 
 
-def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None):
-    if img == "lunar.png":
-        image = load_image(f"assets/data/{img}")
+def player_setup_image(tile_size, image_name="lunar.png", rotate_direction=None):
+    """А: Функция для подготовки изображения игрока для подгонки к адаптивного полю"""
+    if image_name == "lunar.png":
+        image = load_image(f"assets/data/{image_name}")
     else:
-        image = load_image(f"{img}")
+        image = load_image(f"{image_name}")
     image = pygame.transform.scale(image, (tile_size, tile_size))
-    if kuda_rotate == "вверх":
+    if rotate_direction == "вверх":
         image = pygame.transform.rotate(image, 0)
-    elif kuda_rotate == "вправо":
+    elif rotate_direction == "вправо":
         image = pygame.transform.rotate(image, -90)
-    elif kuda_rotate == "влево":
+    elif rotate_direction == "влево":
         image = pygame.transform.rotate(image, -270)
-    elif kuda_rotate == "вниз":
+    elif rotate_direction == "вниз":
         image = pygame.transform.rotate(image, -180)
     else:
         image = pygame.transform.rotate(image, 270)
@@ -22,35 +23,37 @@ def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None):
     return image
 
 
-# ЕСЛИ УСПЕЮ/НЕ ЛЕНЬ БУДЕТ СДЕЛАТЬ ЛЕТЯЩИЙ СНАРЯД
-#
-#class Ammunition(pygame.sprite.Sprite):
-#    def __init__(self, x: int, y: int, kudarotate, laser_or_rocket, tile_size):
-#        super().__init__()
-#        self.x = x
-#        self.y = y
-#        self.kudarotate = kudarotate
-#        self.tile_size = tile_size
-#        if laser_or_rocket == "laser":
-#            self.image = player_setup_image(self.tile_size, img="assets\data\laser.png",
-#                                            kuda_rotate=self.kudarotate)
-#        else:
-#            # ЗАГЛУШКА ДЛЯ РАКЕТЫ
-#            self.image = player_setup_image(self.tile_size, img="assets\data\laser.png",
-#                                            kuda_rotate=self.kudarotate)
+"""От: Вероника
+ЕСЛИ УСПЕЮ/НЕ ЛЕНЬ БУДЕТ СДЕЛАТЬ ЛЕТЯЩИЙ СНАРЯД
 
-#    def fly(self):
-#        if self.kudarotate == "вверх":
-#            self.rect.y -= 12
-#        elif self.kudarotate == "вправо":
-#            self.rect.x += 12
-#        elif self.kudarotate == "вниз":
-#            self.rect.y += 12
-#        elif self.kudarotate == "влево":
-#            self.rect.x -= 12
+class Ammunition(pygame.sprite.Sprite):
+   def __init__(self, x: int, y: int, kudarotate, laser_or_rocket, tile_size):
+       super().__init__()
+       self.x = x
+       self.y = y
+       self.kudarotate = kudarotate
+       self.tile_size = tile_size
+       if laser_or_rocket == "laser":
+           self.image = player_setup_image(self.tile_size, image_name="assets\data\laser.png",
+                                           rotate_direction=self.kudarotate)
+       else:
+           # ЗАГЛУШКА ДЛЯ РАКЕТЫ
+           self.image = player_setup_image(self.tile_size, image_name="assets\data\laser.png",
+                                           rotate_direction=self.kudarotate)
+
+   def fly(self):
+       if self.kudarotate == "вверх":
+           self.rect.y -= 12
+       elif self.kudarotate == "вправо":
+           self.rect.x += 12
+       elif self.kudarotate == "вниз":
+           self.rect.y += 12
+       elif self.kudarotate == "влево":
+           self.rect.x -= 12"""
 
 
 class Player(pygame.sprite.Sprite):
+    """A: Класс игрока, который обрабатывает управление пользователе и позволяет игроку взаимодействовать с полем"""
     def __init__(self, x: int, y: int, box_on_board: bool, energy: int, rockets: int,
                  tile_size: int, player_group: pygame.sprite.Group, all_sprites: pygame.sprite.Group,
                  board):
@@ -66,14 +69,13 @@ class Player(pygame.sprite.Sprite):
         self.rockets = rockets
 
         # для анимации падания
-        self.drop = False  # проигрывается ли
-        self.numdrop = 1  # номер спрайта
-        self.kolvo_vospr = False
+        self.drop = False
+        self.frame_counter = 1
+        self.anim_active = False
 
         # для анимации езды
-        self.kuda_rotate = None
+        self.rotate_direction = None
         self.is_drive = False
-        self.numdrive = 1
         self.steps = 3
         self.vel = None
 
@@ -82,9 +84,7 @@ class Player(pygame.sprite.Sprite):
         self.numshoot = 1
         self.ammunition = "laser"
 
-        # self.image = player_zaglushka((255, 0, 0), tile_size).copy()
         self.image = player_setup_image(tile_size).copy()
-
         self.rect = self.image.get_rect().move(
             tile_size * self.x + board[0][0].offset_x,
             tile_size * self.y + board[0][0].offset_y)
@@ -92,6 +92,7 @@ class Player(pygame.sprite.Sprite):
         self.setup = True
 
     def update(self, velocity=None):
+        """A: Функция, которая вызывается при обновлении состояния игрока"""
         if velocity:
             self.pr_x, self.pr_y = self.x, self.y
             if not self.is_drive and self.energy > 0:
@@ -105,9 +106,7 @@ class Player(pygame.sprite.Sprite):
                     self.y += 1
 
             if not (0 <= self.x < len(self.board[0])) or not (
-                    0 <= self.y < len(self.board)) or self.board[self.y][self.x].tile_type in ["W",
-                                                                                               "S",
-                                                                                               "I"]:
+                    0 <= self.y < len(self.board)) or self.board[self.y][self.x].tile_type in ["W", "S", "I"]:
                 self.x, self.y = self.pr_x, self.pr_y
             else:
                 self.energy -= 1
@@ -134,46 +133,55 @@ class Player(pygame.sprite.Sprite):
                 self.pr_velocity = velocity
 
         if self.box_on_board:
-            self.image = player_setup_image(self.tile_size, img=f"assets\data\sprites\drop\\5.png")
+            self.image = player_setup_image(self.tile_size, image_name=f"assets\data\sprites\drop\\5.png")
             self.image = pygame.transform.rotate(self.image,
                                                  self.current_angle)
         else:
             self.image = pygame.transform.rotate(player_setup_image(self.tile_size),
                                                  self.current_angle)
 
-    def animationdrop(self):  # анимация падения
-        if self.drop and self.numdrop < 6:
-            self.image = player_setup_image(self.tile_size,
-                                            img=f"assets\data\sprites\drop\\{self.numdrop}.png")
-            self.numdrop += 1
+    def animation_drop(self):
+        """В: Функция воспроизведения анимации падения ящика с небес"""
+        if self.drop and self.frame_counter < 6:
+            self.image = pygame.transform.rotate(player_setup_image(self.tile_size,
+                                                                    image_name=f"assets\data\sprites\drop\\{self.frame_counter}.png"),
+                                                 self.current_angle)
+            self.frame_counter += 1
         else:
             self.drop = False
-            self.numdrop = 1
-        if self.numdrop == 6:
-            self.image = player_setup_image(self.tile_size,
-                                            img=f"assets\data\sprites\drop\\{5}.png")
+            self.frame_counter = 1
+
+        if self.frame_counter == 6:
+            self.image = pygame.transform.rotate(player_setup_image(self.tile_size,
+                                                                    image_name=f"assets\data\sprites\drop\\{5}.png"),
+                                                 self.current_angle)
             self.box_on_board = True
 
-    def drive(self, vel=None):  # анимация езды
+    def drive(self, vel=None):
+        """B: Функция воспроизведения анимации езды"""
         if self.is_drive is False:
             return
         self.vel = vel
         if vel:
             try:
                 if vel == 1:
-                    if self.board[self.y][self.x - 1].tile_type in ["W", "S", "I"]:
+                    if self.board[self.y][self.x - 1].tile_type in ["W", "S", "I"] or not (
+                            0 <= self.x - 1 < len(self.board[0])):
                         self.is_drive = False
                         return
                 if vel == 2:
-                    if self.board[self.y][self.x + 1].tile_type in ["W", "S", "I"]:
+                    if self.board[self.y][self.x + 1].tile_type in ["W", "S", "I"] or not (
+                            0 <= self.x + 1 < len(self.board[0])):
                         self.is_drive = False
                         return
                 if vel == 3:
-                    if self.board[self.y - 1][self.x].tile_type in ["W", "S", "I"]:
+                    if self.board[self.y - 1][self.x].tile_type in ["W", "S", "I"] or not (
+                            0 <= self.y - 1 < len(self.board)):
                         self.is_drive = False
                         return
                 if vel == 4:
-                    if self.board[self.y + 1][self.x].tile_type in ["W", "S", "I"]:
+                    if self.board[self.y + 1][self.x].tile_type in ["W", "S", "I"] or not (
+                            0 <= self.y + 1 < len(self.board)):
                         self.is_drive = False
                         return
             except Exception:
@@ -188,19 +196,20 @@ class Player(pygame.sprite.Sprite):
             if self.box_on_board:
                 path = "drivebox"
             self.image = player_setup_image(self.tile_size,
-                                            img=f"assets\data\sprites\{path}\\{self.steps}.png",
-                                            kuda_rotate=self.kuda_rotate)
-            if self.kuda_rotate == "вверх":
+                                            image_name=f"assets\data\sprites\{path}\\{self.steps}.png",
+                                            rotate_direction=self.rotate_direction)
+            if self.rotate_direction == "вверх":
                 self.rect.y -= 12
-            elif self.kuda_rotate == "вправо":
+            elif self.rotate_direction == "вправо":
                 self.rect.x += 12
-            elif self.kuda_rotate == "вниз":
+            elif self.rotate_direction == "вниз":
                 self.rect.y += 12
-            elif self.kuda_rotate == "влево":
+            elif self.rotate_direction == "влево":
                 self.rect.x -= 12
             self.steps += 1
 
     def rocket_launch(self):
+        """А: Функция обрабатывающая стрельбу по лунному железняку"""
         global direction
         if self.rockets:
             self.rockets -= 1
@@ -226,40 +235,29 @@ class Player(pygame.sprite.Sprite):
             if direction[0] == "x":
                 if direction[1] == +1:
                     for x in range(self.x + 1, len(self.board[0])):
-                        # TODO: И СЮДА АНИМАЦИЮ НАДО
-                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][
-                            x].tile_type == "S":
-                            print("BOOM")
+                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][x].tile_type == "S":
                             self.board[self.y][x].tile_type = "."
                             break
                 else:
                     for x in range(self.x - 1, 0 - 1, -1):
-                        # TODO: И СЮДА АНИМАЦИЮ НАДО ТОЖЕ
-                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][
-                            x].tile_type == "S":
-                            print("BOOM")
+                        if self.board[self.y][x].tile_type == "I" or self.board[self.y][x].tile_type == "S":
                             self.board[self.y][x].tile_type = "."
                             break
 
             if direction[0] == "y":
                 if direction[1] == +1:
                     for y in range(self.y + 1, len(self.board)):
-                        # TODO: ДА И СЮДА ТОЖЕ
-                        if self.board[y][self.x].tile_type == "I" or self.board[y][
-                            self.x].tile_type == "S":
-                            print("BOOM")
+                        if self.board[y][self.x].tile_type == "I" or self.board[y][self.x].tile_type == "S":
                             self.board[y][self.x].tile_type = "."
                             break
                 else:
                     for y in range(self.y - 1, 0 - 1, -1):
-                        # TODO: УГАДАЙ, ЧТО
-                        if self.board[y][self.x].tile_type == "I" or self.board[y][
-                            self.x].tile_type == "S":
-                            print("BOOM")
+                        if self.board[y][self.x].tile_type == "I" or self.board[y][self.x].tile_type == "S":
                             self.board[y][self.x].tile_type = "."
                             break
 
     def shooting(self, ammunition=None):  # 1 - стрельба лазером, 2 - стрельба ракетой
+        """В: Функция воспроизведение анимации стрельбы"""
         if ammunition is not None:
             self.ammunition = ammunition
         if self.is_shooting is False:
@@ -271,25 +269,23 @@ class Player(pygame.sprite.Sprite):
             self.is_shooting = False
             self.numshoot = 1
             self.image = player_setup_image(self.tile_size,
-                                            img=f"assets\data\lunar.png",
-                                            kuda_rotate=self.kuda_rotate)
+                                            image_name=f"assets\data\lunar.png",
+                                            rotate_direction=self.rotate_direction)
             if self.ammunition == "rocket":
-                print("РАКЕТА")
                 self.rocket_launch()
             else:
-                print("ЛАЗЕР")
                 self.laser_launch()
         else:
             path = "shoot_laser"
             if self.ammunition == "rocket":
                 path = "shoot_rocket"
             self.image = player_setup_image(self.tile_size,
-                                            img=f"assets\data\sprites\{path}\\{self.numshoot}.png",
-                                            kuda_rotate=self.kuda_rotate)
+                                            image_name=f"assets\data\sprites\{path}\\{self.numshoot}.png",
+                                            rotate_direction=self.rotate_direction)
             self.numshoot += 1
 
     def laser_launch(self):
-        # TODO: ЗДЕСЬ АНАЛОГИЧНО С ROCKET_LAUNCH
+        """А: Функция обрабатывающая стрельбу по лунной породе"""
         global direction
         if self.energy:
             self.energy -= 1
@@ -317,13 +313,11 @@ class Player(pygame.sprite.Sprite):
                 if direction[1] == +1:
                     for x in range(self.x + 1, len(self.board[0])):
                         if self.board[self.y][x].tile_type == "S":
-                            print("BOOM")
                             self.board[self.y][x].tile_type = "."
                             break
                 else:
                     for x in range(self.x - 1, 0 - 1, -1):
                         if self.board[self.y][x].tile_type == "S":
-                            print("BOOM")
                             self.board[self.y][x].tile_type = "."
                             break
 
@@ -331,12 +325,10 @@ class Player(pygame.sprite.Sprite):
                 if direction[1] == +1:
                     for y in range(self.y + 1, len(self.board)):
                         if self.board[y][self.x].tile_type == "S":
-                            print("BOOM")
                             self.board[y][self.x].tile_type = "."
                             break
                 else:
                     for y in range(self.y - 1, 0 - 1, -1):
                         if self.board[y][self.x].tile_type == "S":
-                            print("BOOM")
                             self.board[y][self.x].tile_type = "."
                             break

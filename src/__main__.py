@@ -1,21 +1,23 @@
+import csv
 import sys
 import pygame
 import webbrowser
-import csv
 from assets.board import Board
-from tools.load_image import load_image
 from assets.player import Player
+from tools.load_image import load_image
 
 WIDTH, HEIGHT = 1280, 720
 
 pygame.init()
 pygame.display.set_caption("Moon Project: Explorer")
+pygame.display.set_icon(load_image("assets/data/main_screen.png"))
 size = width, height = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 
 
 def start_screen():
+    """А: Функция отображения заставки игры"""
     main_screen_image = pygame.transform.scale(load_image("assets/data/main_screen.png"), (WIDTH, HEIGHT))
     start_button_image = pygame.transform.scale(load_image("assets/data/start.png"), (151, 151))
     help_button_image = pygame.transform.scale(load_image("assets/data/help.png"), (151, 151))
@@ -43,6 +45,7 @@ def start_screen():
 
 
 def fin_screen(level_data, player, win: bool):
+    """А: Экран поражения/победы с подвежением итогов"""
     with open(f'assets/data/levels.csv', "r", encoding="utf8") as csv_file:
         reader = csv.reader(csv_file, delimiter=';', quotechar='"')
         data = []
@@ -113,6 +116,7 @@ def fin_screen(level_data, player, win: bool):
 
 
 def load_level(level: int):
+    """А: Функция загузки уровня по номеру"""
     with open(f'assets/data/levels.csv', encoding="utf8") as csv_file:
         reader = csv.reader(csv_file, delimiter=';', quotechar='"')
         for index, row in enumerate(reader):
@@ -150,27 +154,25 @@ def load_level(level: int):
             if event.type == pygame.QUIT:
                 running = False
                 sys.exit()
+            if player.is_drive or player.drop:
+                break
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    player.kuda_rotate = "влево"
+                    player.rotate_direction = "влево"
                     player.is_drive = True
                     player.drive(vel=1)
-                    # player.update(1)
                 if event.key == pygame.K_RIGHT:
-                    player.kuda_rotate = "вправо"
+                    player.rotate_direction = "вправо"
                     player.is_drive = True
                     player.drive(vel=2)
-                    # player.update(2)
                 if event.key == pygame.K_UP:
-                    player.kuda_rotate = "вверх"
+                    player.rotate_direction = "вверх"
                     player.is_drive = True
                     player.drive(vel=3)
-                    # player.update(3)
                 if event.key == pygame.K_DOWN:
-                    player.kuda_rotate = "вниз"
+                    player.rotate_direction = "вниз"
                     player.is_drive = True
                     player.drive(vel=4)
-                    # player.update(4)
                 if event.key == pygame.K_LCTRL:
                     player.ammunition = "rocket"
                     player.is_shooting = True
@@ -189,29 +191,32 @@ def load_level(level: int):
 
         player.shooting()
 
-        if player.is_drive is False:
-            if player.kolvo_vospr is False:
-                # проигрывание анимаций покадрово
-                player.animationdrop()
-                player.kolvo_vospr = True
+        if not player.is_drive:
+            if not player.anim_active:
+                player.animation_drop()
+                player.anim_active = True
             else:
-                player.kolvo_vospr = False
+                player.anim_active = False
 
         tiles_group.update(player_group, player)
         clock.tick(FPS)
         pygame.display.flip()
+
         if board.check_win():
+            tiles_group.update(player_group, player)
+            player_group.update()
             tiles_group.draw(screen)
             player_group.draw(screen)
             fin_screen(level_data, player, 1)
             break
 
         if player.energy <= 0:
+            tiles_group.update(player_group, player)
+            player_group.update()
             tiles_group.draw(screen)
             player_group.draw(screen)
             fin_screen(level_data, player, 0)
             break
 
 
-# load_level(1)
 start_screen()

@@ -1,10 +1,11 @@
 import os
 import time
 import pygame
-from src.tools.load_image import load_image
+from tools.load_image import load_image
 
 
 def tile_image_setup(file, tile_size):
+    """А:  Функция, которая подгатавливает и подгоняет размер тайла"""
     image = load_image(f"assets/data/{file}.png")
     image = pygame.transform.scale(image, (tile_size, tile_size))
     pygame.draw.rect(image, (175, 238, 238), (0, 0, tile_size, tile_size), 1)
@@ -15,6 +16,8 @@ def tile_image_setup(file, tile_size):
 
 
 class Tile(pygame.sprite.Sprite):
+    """А: Класс тайла, который яляется единичной структорой поля"""
+
     def __init__(self, tile_type: str, x: int, y: int, offset_x: int, offset_y: int, tiles_group: pygame.sprite.Group,
                  all_sprites: pygame.sprite.Group, tile_size: int = None):
         super().__init__(tiles_group, all_sprites)
@@ -55,6 +58,7 @@ class Tile(pygame.sprite.Sprite):
             self.bonus = False
 
     def update(self, player_group, player):
+        """А: Функция, что вызывается при обновлении состояния клетки"""
         if self.bonus:
             if self.tile_type == "R":
                 rocket_image = load_image("assets/data/rocket.png")
@@ -75,19 +79,18 @@ class Tile(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollideany(self, player_group):
             if self.tile_type == "B" and self.box_in_tile:
-                # TODO: ЗДЕСЬ НУЖНО ВСТАВИТЬ АНИМАЦИЮ
                 player.box_on_board = True
                 self.box_in_tile = False
                 player.update()
 
             if self.tile_type == "X" and not self.box_in_tile and player.box_on_board:
-                # TODO: ЗДЕСЬ НУЖНО ВСТАВИТЬ АНИМАЦИЮ ТОЖЕ
                 player.box_on_board = False
                 self.box_in_tile = True
 
-            if self.tile_type == "L" and not player.box_on_board:   # анимация при наезде на кнопку
+            if self.tile_type == "L" and not player.box_on_board:
                 player.drop = True
-                # player.box_on_board = True
+            else:
+                player.drop = False
 
             if self.tile_type == "R" and self.bonus:
                 player.rockets += 1
@@ -99,6 +102,8 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Board:
+    """А: Класс доски, который нужен для удобной инициализации доски и проверки прохождения уровня"""
+
     def __init__(self, tile_map_file: str, all_sprites: pygame.sprite.Group,
                  tiles_group: pygame.sprite.Group):
         self.board = []
@@ -118,6 +123,7 @@ class Board:
                 self.board.append(tmp)
 
     def check_win(self):
+        """А: Функция проверки завершенности уровня"""
         cnt_X, cnt_activated_X = 0, 0
         for y in range(len(self.board)):
             for x in range(len(self.board[y])):
