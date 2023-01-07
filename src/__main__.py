@@ -172,9 +172,13 @@ def load_level(level: int):
                     player.drive(vel=4)
                     # player.update(4)
                 if event.key == pygame.K_LCTRL:
-                    player.rocket_launch()
+                    player.ammunition = "rocket"
+                    player.is_shooting = True
+                    player.shooting()
                 if event.key == pygame.K_SPACE:
-                    player.laser_launch()
+                    player.ammunition = "laser"
+                    player.is_shooting = True
+                    player.shooting()
                 if event.key == pygame.K_r:
                     load_level(level)
                 if event.key == pygame.K_ESCAPE:
@@ -182,6 +186,8 @@ def load_level(level: int):
 
         if player.is_drive:
             player.drive(vel=player.vel)
+
+        player.shooting()
 
         if player.is_drive is False:
             if player.kolvo_vospr is False:

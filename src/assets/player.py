@@ -22,6 +22,34 @@ def player_setup_image(tile_size, img="lunar.png", kuda_rotate=None):
     return image
 
 
+# ЕСЛИ УСПЕЮ/НЕ ЛЕНЬ БУДЕТ СДЕЛАТЬ ЛЕТЯЩИЙ СНАРЯД
+#
+#class Ammunition(pygame.sprite.Sprite):
+#    def __init__(self, x: int, y: int, kudarotate, laser_or_rocket, tile_size):
+#        super().__init__()
+#        self.x = x
+#        self.y = y
+#        self.kudarotate = kudarotate
+#        self.tile_size = tile_size
+#        if laser_or_rocket == "laser":
+#            self.image = player_setup_image(self.tile_size, img="assets\data\laser.png",
+#                                            kuda_rotate=self.kudarotate)
+#        else:
+#            # ЗАГЛУШКА ДЛЯ РАКЕТЫ
+#            self.image = player_setup_image(self.tile_size, img="assets\data\laser.png",
+#                                            kuda_rotate=self.kudarotate)
+
+#    def fly(self):
+#        if self.kudarotate == "вверх":
+#            self.rect.y -= 12
+#        elif self.kudarotate == "вправо":
+#            self.rect.x += 12
+#        elif self.kudarotate == "вниз":
+#            self.rect.y += 12
+#        elif self.kudarotate == "влево":
+#            self.rect.x -= 12
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x: int, y: int, box_on_board: bool, energy: int, rockets: int,
                  tile_size: int, player_group: pygame.sprite.Group, all_sprites: pygame.sprite.Group,
@@ -48,8 +76,11 @@ class Player(pygame.sprite.Sprite):
         self.numdrive = 1
         self.steps = 3
         self.vel = None
-        self.prpr1 = None
-        self.prpr2 = None
+
+        # для анимации стрельбы
+        self.is_shooting = False
+        self.numshoot = 1
+        self.ammunition = "laser"
 
         # self.image = player_zaglushka((255, 0, 0), tile_size).copy()
         self.image = player_setup_image(tile_size).copy()
@@ -227,6 +258,35 @@ class Player(pygame.sprite.Sprite):
                             print("BOOM")
                             self.board[y][self.x].tile_type = "."
                             break
+
+    def shooting(self, ammunition=None):  # 1 - стрельба лазером, 2 - стрельба ракетой
+        if ammunition is not None:
+            self.ammunition = ammunition
+        if self.is_shooting is False:
+            return
+        if self.box_on_board is True:
+            self.is_shooting = False
+            return
+        if self.numshoot == 6:
+            self.is_shooting = False
+            self.numshoot = 1
+            self.image = player_setup_image(self.tile_size,
+                                            img=f"assets\data\lunar.png",
+                                            kuda_rotate=self.kuda_rotate)
+            if self.ammunition == "rocket":
+                print("РАКЕТА")
+                self.rocket_launch()
+            else:
+                print("ЛАЗЕР")
+                self.laser_launch()
+        else:
+            path = "shoot_laser"
+            if self.ammunition == "rocket":
+                path = "shoot_rocket"
+            self.image = player_setup_image(self.tile_size,
+                                            img=f"assets\data\sprites\{path}\\{self.numshoot}.png",
+                                            kuda_rotate=self.kuda_rotate)
+            self.numshoot += 1
 
     def laser_launch(self):
         # TODO: ЗДЕСЬ АНАЛОГИЧНО С ROCKET_LAUNCH
