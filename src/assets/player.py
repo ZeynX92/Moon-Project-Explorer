@@ -23,7 +23,7 @@ def player_setup_image(tile_size, image_name="lunar.png", rotate_direction=None)
     return image
 
 
-"""От: Вероника
+"""От: В
 ЕСЛИ УСПЕЮ/НЕ ЛЕНЬ БУДЕТ СДЕЛАТЬ ЛЕТЯЩИЙ СНАРЯД
 
 class Ammunition(pygame.sprite.Sprite):
