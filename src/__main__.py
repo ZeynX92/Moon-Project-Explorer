@@ -58,7 +58,8 @@ def fin_screen(level_data, player, win: bool):
         for line in data:
             line = [i.rstrip() for i in line]
             if line[0] == str(level_data[0]):
-                line[-1] = min(int(level_data[-1]), int(100 - player.energy * 100 / int(level_data[-2])))
+                line[-1] = min(int(level_data[-1]),
+                               abs(int(100 - (int(level_data[1]) - player.energy) * 100 / int(level_data[-2]))))
             writer.writerow(line)
 
     running = True
@@ -89,12 +90,13 @@ def fin_screen(level_data, player, win: bool):
             screen.blit(result_1, (WIDTH // 2.75, HEIGHT // 3.75 + title.get_height()))
 
             result_2 = font.render(
-                f"Deviation from AI: {int(100 - player.energy * 100 / int(level_data[-2]))}%", True, (175, 238, 238)
+                f"Deviation from AI: {abs(int(100 - (int(level_data[1]) - player.energy) * 100 / int(level_data[-2])))}%",
+                True, (175, 238, 238)
             )
             screen.blit(result_2, (WIDTH // 2.75, HEIGHT // 3.75 + title.get_height() + result_1.get_height()))
 
             result_3 = font.render(
-                f"The Best Result: {min(int(level_data[-1]), int(100 - player.energy * 100 / int(level_data[-2])))}%",
+                f"The Best Result: {min(int(level_data[-1]), abs(int(100 - (int(level_data[1]) - player.energy) * 100 / int(level_data[-2]))))}%",
                 True, (175, 238, 238))
             screen.blit(result_3, (
                 WIDTH // 2.75, HEIGHT // 3.75 + title.get_height() + result_1.get_height() + result_2.get_height()))
@@ -105,7 +107,7 @@ def fin_screen(level_data, player, win: bool):
             screen.blit(title, (WIDTH // 2.75, HEIGHT // 3.75))
 
             result_3 = font.render(
-                f"The Best Result: {min(int(level_data[-1]), int(100 - player.energy * 100 / int(level_data[-2])))}%",
+                f"The Best Result: {min(int(level_data[-1]), abs(int(100 - (int(level_data[1]) - player.energy) * 100 / int(level_data[-2]))))}%",
                 True,
                 (175, 238, 238)
             )
@@ -117,12 +119,16 @@ def fin_screen(level_data, player, win: bool):
 
 def load_level(level: int):
     """А: Функция загузки уровня по номеру"""
+    level_data = []
     with open(f'assets/data/levels.csv', encoding="utf8") as csv_file:
         reader = csv.reader(csv_file, delimiter=';', quotechar='"')
         for index, row in enumerate(reader):
             if index == level:
                 level_data = [i.rstrip() for i in row]
                 break
+
+    if not level_data:
+        start_screen()
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()

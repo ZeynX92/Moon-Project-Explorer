@@ -1,6 +1,6 @@
-level;energy;rockets;map;etalon;best
-1;9999;10;lvl.txt;19;-52484
-2;19;1;lvl2.txt;34;67
-3;45;0;lvl3.txt;56;100
-4;23;1;lvl4.txt;78;100
-5;10;0;lvl5.txt;12;100
+level;energy;rockets;map     ;etalon;best
+1    ;28    ;0      ;lvl.txt ;19    ;100
+2    ;35    ;0      ;lvl2.txt;27    ;100
+3    ;19    ;0      ;lvl3.txt;7     ;100
+4    ;19    ;0      ;lvl4.txt;14    ;100
+5    ;20    ;0      ;lvl5.txt;10    ;100
